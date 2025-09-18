@@ -35,9 +35,13 @@ P2b = P1 * epsilon_k_razaoP2P1(Eb, k)
 P2c = P1 * epsilon_k_razaoP2P1(Ec, k)
 
 # Pressões atmosféricas para as altitudes de cada estágio de voo
-P3_1 = us_standard_atmosphere(h1)
-P3_2 = us_standard_atmosphere(h2)
-P3_3 = us_standard_atmosphere(h3)
+atm1 = us_standard_atmosphere(h1)
+atm2 = us_standard_atmosphere(h2)
+atm3 = us_standard_atmosphere(h3)
+
+P3_1 = atm1["P"]
+P3_2 = atm2["P"]
+P3_3 = atm3["P"]
 
 # Cálculo do empuxo para cada estágio de voo
 F1 = empuxo(P1, At, k, P2a, P3_1, Ea)
@@ -57,3 +61,4 @@ plt.title('Empuxo do motor vs. Altitude para diferentes razões de expansão')
 plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 plt.legend()
 plt.show()
+
