@@ -1,11 +1,13 @@
 import matplotlib.pyplot as plt
-from matplotlib.patches import Arc
 from bisect import bisect_left
+import numpy as np
+import pandas as pd
 
 """
 Baseado nas notas técnicas: "The thrust optimised parabolic nozzle"
 http://www.aspirespace.org.uk/downloads/Thrust%20optimised%20parabolic%20nozzle.pdf
 """
+
 def tubeira_sino(k, arazao, Rt, l_camara):
     """
     Calcula o contorno de uma tubeira em formato de sino.
@@ -258,6 +260,28 @@ def plotar_tubeira(ax, titulo, Rt, angulos, contorno, arazao):
     ax.set_ylabel('Raio')
 
 
+def gerar_tabela_pontos(contorno, nome_arquivo=None):
+    # Gera uma tabela com pontos (x, y) para o CAD da tubeira.
+    xe, ye, nye, xe2, ye2, nye2, xsino, ysino, nysino = contorno
+
+    # Junta todos os pontos (simetria)
+    x_total = np.concatenate([xe, xe2, xsino])
+    y_total = np.concatenate([ye, ye2, ysino])
+
+    # Cria DataFrame
+    df = pd.DataFrame({
+        "x (posição axial)": x_total,
+        "y (raio)": y_total
+    })
+
+    # Salvar em CSV se solicitado
+    if nome_arquivo:
+        df.to_csv(nome_arquivo, index=False)
+
+    return df
+
+
+
 def plotar_3d(ax, contorno):
     """
     Cria visualização 3D da tubeira
@@ -286,7 +310,7 @@ def plotar_3d(ax, contorno):
     ax.set_xlabel('Y')
     ax.set_ylabel('Z')
     ax.set_zlabel('X (Posição axial)')
-    ax.set_title('Vista 3D da Tubeira')
+    ax.set_title('Vista 3D da tubeira')
 
 
 def plotar_completo(titulo, r_garganta, angulos, contorno, arazao):
