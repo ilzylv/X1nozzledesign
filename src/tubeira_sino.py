@@ -280,8 +280,6 @@ def gerar_tabela_pontos(contorno, nome_arquivo=None):
 
     return df
 
-
-
 def plotar_3d(ax, contorno):
     """
     Cria visualização 3D da tubeira
