@@ -5,15 +5,16 @@ from src.atmosfera import us_standard_atmosphere
 from src.tubeira_sino import gerar_tabela_pontos, plotar_completo, plotar_tubeira, encontrar_mais_proximo, interpolar, angulos_paredes, tubeira_sino
 
 # Dados do motor X1
-k = 1.22 # Razão de calores específicos
-R = 518 # Constante específica do gás [J/kg*K]
-F = 2.3 * 10**6 # Empuxo máximo (nível do mar) [N]
-mdot = 1200 # Vazão mássica [kg/s]
-T1 = 3300 # Temperatura na câmara de combustão [K]
-P1 = 30 * 10**6 # Pressão na câmara de combustão [Pa]
-Isp = 330 # Impulso específico (nível do mar) [s]
-At = 0.126 # Área da garganta [m^2]]
-Rt = np.sqrt(At/np.pi) # Cálculo do raio da garganta
+k = 1.22                    # Razão de calores específicos
+R = 518                     # Constante específica do gás [J/kg*K]
+F = 2.3 * 10**6             # Empuxo máximo (nível do mar) [N]
+mdot = 1200                 # Vazão mássica [kg/s]
+T1 = 3300                   # Temperatura na câmara de combustão [K]
+P1 = 30 * 10**6             # Pressão na câmara de combustão [Pa]
+Isp = 330                   # Impulso específico (nível do mar) [s]
+At = 0.126                  # Área da garganta [m^2]]
+Rt = np.sqrt(At/np.pi)      # Cálculo do raio da garganta
+g = 9.80665                 # Aceleração da gravidade [m/s^2]
 
 # Altitudes de operação
 Ha = 0
@@ -23,8 +24,8 @@ Hd = 120e3
 
 # Razões de expansão para cada estágio de voo
 Ea = 50 # Razão baixa para compensar alta pressão atmosférica
-Eb = 200 # Razão intermediária para
-Ec = 600 # Razão alta justificada pela presença no vácuo
+Eb = 150 # Razão intermediária para
+Ec = 300 # Razão alta justificada pela presença no vácuo
 
 # Divisão em estágios
 h1 = np.linspace(Ha, Hb)      # Fase 1
@@ -79,8 +80,25 @@ angulos_c, contorno_c = tubeira_sino(k, Ec, Rt_mm, l_camara_perc)
 plotar_completo(f'Tubeira estágio 3 (Razão de expansão = {Ec})', Rt, angulos_c, contorno_c, Ec)
 gerar_tabela_pontos(contorno_c, 'tubeira_estagio_3.csv')
 
-# Plot dos resultados
+# Impulso Específico para cada estágio
+Isp1 = F1 / (mdot * g)
+Isp2 = F2 / (mdot * g)
+Isp3 = F3 / (mdot * g)
+Isp_total = F_total / (mdot * g)
 
+# Coeficiente de empuxo para cada estágio
+Cf1 = F1 / (P1 * At)
+Cf2 = F2 / (P1 * At)
+Cf3 = F3 / (P1 * At)
+Cf_total = F_total / (P1 * At)
+
+# Velocidade efetiva dos gases para cada estágio
+c1 = Isp1 * g
+c2 = Isp2 * g
+c3 = Isp3 * g
+c_total = Isp_total * g
+
+# Plot dos resultados
 # Empuxo vs Altitude
 plt.figure(figsize=(10, 6))
 plt.plot(h / 1e3, F / 1e6, label='Empuxo')
@@ -94,18 +112,104 @@ plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 plt.legend()
 plt.show()
 
-# Pressão de saída da tubeira e pressão ambiente
+# Pressão de saída da tubeira vs Pressão ambiente
 plt.figure(figsize=(12, 7))
-plt.plot(h_total / 1e3, P_atm_total, label='Pressão atmosférica (Ambiente)', color='k', linestyle='--')
-plt.plot(h1 / 1e3, np.full_like(h1, P2a), label=f'Pressão de aaída estágio 1 (P_exit = {P2a / 1e3:.1f} kPa)')
+plt.plot(h_total / 1e3, P_atm_total, label='Pressão atmosférica (ambiente)', color='k', linestyle='--')
+plt.plot(h1 / 1e3, np.full_like(h1, P2a), label=f'Pressão de saída estágio 1 (P_exit = {P2a / 1e3:.1f} kPa)')
 plt.plot(h2 / 1e3, np.full_like(h2, P2b), label=f'Pressão de saída estágio 2 (P_exit = {P2b / 1e3:.1f} kPa)')
 plt.plot(h3 / 1e3, np.full_like(h3, P2c), label=f'Pressão de saída estágio 3 (P_exit = {P2c / 1e3:.1f} kPa)')
 plt.yscale('log')
 plt.xlabel('Altitude (km)', fontsize=12)
 plt.ylabel('Pressão (Pa)', fontsize=12)
-plt.title('Comparação entre pressão de saída da tubeira e Pressão ambiente', fontsize=14)
+plt.title('Comparação entre pressão de saída da tubeira vs. Pressão ambiente', fontsize=14)
 plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 plt.legend()
 plt.show()
 
+# Impulso Específico vs Altitude
+plt.figure(figsize=(10, 6))
+plt.plot(h_total / 1e3, Isp_total, color='k', linewidth=2.5, label='Curva de desempenho')
+plt.plot(h1 / 1e3, Isp1, label=f'Estágio 1 (E={Ea})')
+plt.plot(h2 / 1e3, Isp2, label=f'Estágio 2 (E={Eb})')
+plt.plot(h3 / 1e3, Isp3, label=f'Estágio 3 (E={Ec})')
+plt.xlabel('Altitude (km)')
+plt.ylabel('Impulso específico (s)')
+plt.title('Impulso específico vs. Altitude')
+plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+plt.legend()
+plt.show()
+
+# Velocidade efetiva dos gases vs Altitude
+plt.figure(figsize=(10, 6))
+plt.plot(h_total / 1e3, c_total, color='k', linewidth=2.5, label='Curva de desempenho')
+plt.plot(h1 / 1e3, c1, label=f'Estágio 1 (E={Ea})')
+plt.plot(h2 / 1e3, c2, label=f'Estágio 2 (E={Eb})')
+plt.plot(h3 / 1e3, c3, label=f'Estágio 3 (E={Ec})')
+plt.xlabel('Altitude (km)')
+plt.ylabel('Velocidade efetiva dos eases (m/s)')
+plt.title('Velocidade efetiva dos gases vs. Altitude')
+plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+plt.legend()
+plt.show()
+
+# Análise de pressão para o primeiro estágio
+plt.figure(figsize=(12, 7))
+plt.title(f'Análise de Pressão para ε = {Ea}')
+p_exit_1 = np.full_like(h1, P2a)
+plt.plot(h1 / 1e3, P3_1, label='Pressão ambiente (Pa)', color='k', linestyle='--')
+plt.plot(h1 / 1e3, p_exit_1, label=f'Pressão saída (ε={Ea})')
+plt.fill_between(h1 / 1e3, p_exit_1, P3_1, where=p_exit_1 > P3_1, color='skyblue', alpha=0.6, label='Sub-expandido')
+plt.fill_between(h1 / 1e3, p_exit_1, P3_1, where=p_exit_1 < P3_1, color='salmon', alpha=0.6, label='Super-expandido')
+plt.ylabel('Pressão (Pa)')
+plt.xlabel('Altitude (km)')
+plt.yscale('log')
+plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+plt.legend()
+plt.show()
+
+# Análise de pressão para o segundo estágio
+plt.figure(figsize=(12, 7))
+plt.title(f'Análise de pressão para ε = {Eb}')
+p_exit_2 = np.full_like(h2, P2b)
+plt.plot(h2 / 1e3, P3_2, label='Pressão ambiente (Pa)', color='k', linestyle='--')
+plt.plot(h2 / 1e3, p_exit_2, label=f'Pressão Saída (ε={Eb})', color='darkorange')
+plt.fill_between(h2 / 1e3, p_exit_2, P3_2, where=p_exit_2 > P3_2, color='skyblue', alpha=0.6)
+plt.fill_between(h2 / 1e3, p_exit_2, P3_2, where=p_exit_2 < P3_2, color='salmon', alpha=0.6)
+plt.ylabel('Pressão (Pa)')
+plt.xlabel('Altitude (km)')
+plt.yscale('log')
+plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+plt.legend()
+plt.show()
+
+# Análise de pressão para o terceiro estágio
+plt.figure(figsize=(12, 7))
+plt.title(f'Análise de pressão para ε = {Ec}')
+p_exit_3 = np.full_like(h3, P2c)
+plt.plot(h3 / 1e3, P3_3, label='Pressão ambiente (Pa)', color='k', linestyle='--')
+plt.plot(h3 / 1e3, p_exit_3, label=f'Pressão Saída (ε={Ec})', color='green')
+plt.fill_between(h3 / 1e3, p_exit_3, P3_3, where=p_exit_3 > P3_3, color='skyblue', alpha=0.6)
+plt.fill_between(h3 / 1e3, p_exit_3, P3_3, where=p_exit_3 < P3_3, color='salmon', alpha=0.6)
+plt.ylabel('Pressão (Pa)')
+plt.xlabel('Altitude (km)')
+plt.yscale('log')
+plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+plt.legend()
+plt.show()
+
+# Encontra a curva de empuxo "ótima" (o máximo de cada ponto)
+F_tubeira_A_em_h_total = empuxo(P1, At, k, P2a, P_atm_total, Ea)
+F_tubeira_B_em_h_total = empuxo(P1, At, k, P2b, P_atm_total, Eb)
+F_tubeira_C_em_h_total = empuxo(P1, At, k, P2c, P_atm_total, Ec)
+plt.plot(h_total / 1e3, F_tubeira_A_em_h_total / 1e6, linestyle='--', label=f'Desempenho da tubeira 1 (ε={Ea})')
+plt.plot(h_total / 1e3, F_tubeira_B_em_h_total / 1e6, linestyle='--', label=f'Desempenho da tubeira 2 (ε={Eb})')
+plt.plot(h_total / 1e3, F_tubeira_C_em_h_total / 1e6, linestyle='--', label=f'Desempenho da tubeira 3 (ε={Ec})')
+F_otimo = np.maximum.reduce([F_tubeira_A_em_h_total, F_tubeira_B_em_h_total, F_tubeira_C_em_h_total])
+plt.plot(h_total / 1e3, F_otimo / 1e6, color='k', linewidth=2.5, label='Curva de empuxo ótima envelopada')
+plt.title('Análise de desempenho para otimização das trocas', fontsize=16)
+plt.xlabel('Altitude (km)')
+plt.ylabel('Empuxo (MN)')
+plt.grid(True, which='both')
+plt.legend()
+plt.show()
 
