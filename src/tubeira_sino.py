@@ -264,9 +264,10 @@ def gerar_tabela_pontos(contorno, nome_arquivo=None):
     # Gera uma tabela com pontos (x, y) para o CAD da tubeira.
     xe, ye, nye, xe2, ye2, nye2, xsino, ysino, nysino = contorno
 
-    # Junta todos os pontos (simetria)
-    x_total = np.concatenate([xe, xe2, xsino])
-    y_total = np.concatenate([ye, ye2, ysino])
+    # Junta todos os pontos do contorno superior, removendo o último ponto
+    # das seções xe e xe2 para evitar a duplicata com o ponto inicial da seção seguinte.
+    x_total = np.concatenate([xe[:-1], xe2[:-1], xsino])
+    y_total = np.concatenate([ye[:-1], ye2[:-1], ysino])
 
     # Cria DataFrame
     df = pd.DataFrame({
@@ -281,9 +282,6 @@ def gerar_tabela_pontos(contorno, nome_arquivo=None):
     return df
 
 def plotar_3d(ax, contorno):
-    """
-    Cria visualização 3D da tubeira
-    """
     xe = contorno[0]
     ye = contorno[1]
     xe2 = contorno[3]
@@ -291,9 +289,9 @@ def plotar_3d(ax, contorno):
     xsino = contorno[6]
     ysino = contorno[7]
 
-    # Combinar todas as coordenadas
-    x = np.concatenate([xe, xe2, xsino])
-    y = np.concatenate([ye, ye2, ysino])
+    # Combinar todas as coordenadas sem duplicatas
+    x = np.concatenate([xe[:-1], xe2[:-1], xsino])
+    y = np.concatenate([ye[:-1], ye2[:-1], ysino])
 
     # Criar superfície de revolução
     theta = np.linspace(0, 2*np.pi, 50)
@@ -312,9 +310,6 @@ def plotar_3d(ax, contorno):
 
 
 def plotar_completo(titulo, r_garganta, angulos, contorno, arazao):
-    """
-    Cria plot completo com vista 2D e 3D
-    """
     fig = plt.figure(figsize=(15, 7))
 
     # Plot 2D

@@ -64,17 +64,18 @@ P_atm_total = np.concatenate((P3_1, P3_2, P3_3))
 l_camara_perc = 80
 
 # Estágio 01
-angulos_a, contorno_a = tubeira_sino(k, Ea, Rt, l_camara_perc)
+Rt_mm = Rt * 1000
+angulos_a, contorno_a = tubeira_sino(k, Ea, Rt_mm, l_camara_perc)
 plotar_completo(f'Tubeira estágio 1 (Razão de expansão = {Ea})', Rt, angulos_a, contorno_a, Ea)
 gerar_tabela_pontos(contorno_a, 'tubeira_estagio_1.csv')
 
 # Estágio 02
-angulos_b, contorno_b = tubeira_sino(k, Eb, Rt, l_camara_perc)
+angulos_b, contorno_b = tubeira_sino(k, Eb, Rt_mm, l_camara_perc)
 plotar_completo(f'Tubeira estágio 2 (Razão de expansão = {Eb})', Rt, angulos_b, contorno_b, Eb)
 gerar_tabela_pontos(contorno_b, 'tubeira_estagio_2.csv')
 
 # Estágio 03
-angulos_c, contorno_c = tubeira_sino(k, Ec, Rt, l_camara_perc)
+angulos_c, contorno_c = tubeira_sino(k, Ec, Rt_mm, l_camara_perc)
 plotar_completo(f'Tubeira estágio 3 (Razão de expansão = {Ec})', Rt, angulos_c, contorno_c, Ec)
 gerar_tabela_pontos(contorno_c, 'tubeira_estagio_3.csv')
 
@@ -106,6 +107,5 @@ plt.title('Comparação entre pressão de saída da tubeira e Pressão ambiente'
 plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 plt.legend()
 plt.show()
-
 
 
