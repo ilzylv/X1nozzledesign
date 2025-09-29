@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from src.funcoes_auxiliares import epsilon_k_razaoP2P1, empuxo
 from src.atmosfera import us_standard_atmosphere
-from src.tubeira_sino import gerar_tabela_pontos, plotar_completo, plotar_tubeira, encontrar_mais_proximo, interpolar, angulos_paredes, tubeira_sino
+from src.tubeira_sino import gerar_tabela_pontos, plotar_completo, tubeira_sino
 
 # Dados do motor X1
 k = 1.22                    # Razão de calores específicos
@@ -23,14 +23,14 @@ Hc = 80e3
 Hd = 120e3
 
 # Razões de expansão para cada estágio de voo
-Ea = 50 # Razão baixa para compensar alta pressão atmosférica
-Eb = 150 # Razão intermediária para
-Ec = 300 # Razão alta justificada pela presença no vácuo
+Ea = 30                     # Razão baixa para compensar alta pressão atmosférica
+Eb = 60                    # Razão intermediária
+Ec = 150                    # Razão alta justificada pela presença no vácuo
 
 # Divisão em estágios
-h1 = np.linspace(Ha, Hb)      # Fase 1
-h2 = np.linspace(Hb, Hc)      # Fase 2
-h3 = np.linspace(Hc, Hd, 100) # Re-entrada
+h1 = np.linspace(Ha, Hb)                # Fase 1
+h2 = np.linspace(Hb, Hc)                # Fase 2
+h3 = np.linspace(Hc, Hd, 100)      # Re-entrada
 
 # Pressões de saída de acordo com a razão de pressões
 P2a = P1 * epsilon_k_razaoP2P1(Ea, k)
@@ -80,23 +80,11 @@ angulos_c, contorno_c = tubeira_sino(k, Ec, Rt_mm, l_camara_perc)
 plotar_completo(f'Tubeira estágio 3 (Razão de expansão = {Ec})', Rt, angulos_c, contorno_c, Ec)
 gerar_tabela_pontos(contorno_c, 'tubeira_estagio_3.csv')
 
-# Impulso Específico para cada estágio
+# Impulso específico para cada estágio
 Isp1 = F1 / (mdot * g)
 Isp2 = F2 / (mdot * g)
 Isp3 = F3 / (mdot * g)
 Isp_total = F_total / (mdot * g)
-
-# Coeficiente de empuxo para cada estágio
-Cf1 = F1 / (P1 * At)
-Cf2 = F2 / (P1 * At)
-Cf3 = F3 / (P1 * At)
-Cf_total = F_total / (P1 * At)
-
-# Velocidade efetiva dos gases para cada estágio
-c1 = Isp1 * g
-c2 = Isp2 * g
-c3 = Isp3 * g
-c_total = Isp_total * g
 
 # Plot dos resultados
 # Empuxo vs Altitude
@@ -107,7 +95,7 @@ plt.plot(h2 / 1e3, F2 / 1e6, label=f'Estágio 2 (E={Eb})')
 plt.plot(h3 / 1e3, F3 / 1e6, label=f'Estágio 3 (E={Ec})')
 plt.xlabel('Altitude (km)')
 plt.ylabel('Empuxo (MN)')
-plt.title('Empuxo do motor vs. Altitude para diferentes razões de expansão')
+plt.title('Empuxo do motor vs. Altitude')
 plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 plt.legend()
 plt.show()
@@ -126,7 +114,7 @@ plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 plt.legend()
 plt.show()
 
-# Impulso Específico vs Altitude
+# Impulso específico vs Altitude
 plt.figure(figsize=(10, 6))
 plt.plot(h_total / 1e3, Isp_total, color='k', linewidth=2.5, label='Curva de desempenho')
 plt.plot(h1 / 1e3, Isp1, label=f'Estágio 1 (E={Ea})')
@@ -139,22 +127,9 @@ plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 plt.legend()
 plt.show()
 
-# Velocidade efetiva dos gases vs Altitude
-plt.figure(figsize=(10, 6))
-plt.plot(h_total / 1e3, c_total, color='k', linewidth=2.5, label='Curva de desempenho')
-plt.plot(h1 / 1e3, c1, label=f'Estágio 1 (E={Ea})')
-plt.plot(h2 / 1e3, c2, label=f'Estágio 2 (E={Eb})')
-plt.plot(h3 / 1e3, c3, label=f'Estágio 3 (E={Ec})')
-plt.xlabel('Altitude (km)')
-plt.ylabel('Velocidade efetiva dos eases (m/s)')
-plt.title('Velocidade efetiva dos gases vs. Altitude')
-plt.grid(True, which='both', linestyle='--', linewidth=0.5)
-plt.legend()
-plt.show()
-
 # Análise de pressão para o primeiro estágio
 plt.figure(figsize=(12, 7))
-plt.title(f'Análise de Pressão para ε = {Ea}')
+plt.title(f'Análise de pressão para ε = {Ea}')
 p_exit_1 = np.full_like(h1, P2a)
 plt.plot(h1 / 1e3, P3_1, label='Pressão ambiente (Pa)', color='k', linestyle='--')
 plt.plot(h1 / 1e3, p_exit_1, label=f'Pressão saída (ε={Ea})')
@@ -172,7 +147,7 @@ plt.figure(figsize=(12, 7))
 plt.title(f'Análise de pressão para ε = {Eb}')
 p_exit_2 = np.full_like(h2, P2b)
 plt.plot(h2 / 1e3, P3_2, label='Pressão ambiente (Pa)', color='k', linestyle='--')
-plt.plot(h2 / 1e3, p_exit_2, label=f'Pressão Saída (ε={Eb})', color='darkorange')
+plt.plot(h2 / 1e3, p_exit_2, label=f'Pressão saída (ε={Eb})', color='darkorange')
 plt.fill_between(h2 / 1e3, p_exit_2, P3_2, where=p_exit_2 > P3_2, color='skyblue', alpha=0.6)
 plt.fill_between(h2 / 1e3, p_exit_2, P3_2, where=p_exit_2 < P3_2, color='salmon', alpha=0.6)
 plt.ylabel('Pressão (Pa)')
@@ -187,7 +162,7 @@ plt.figure(figsize=(12, 7))
 plt.title(f'Análise de pressão para ε = {Ec}')
 p_exit_3 = np.full_like(h3, P2c)
 plt.plot(h3 / 1e3, P3_3, label='Pressão ambiente (Pa)', color='k', linestyle='--')
-plt.plot(h3 / 1e3, p_exit_3, label=f'Pressão Saída (ε={Ec})', color='green')
+plt.plot(h3 / 1e3, p_exit_3, label=f'Pressão saída (ε={Ec})', color='green')
 plt.fill_between(h3 / 1e3, p_exit_3, P3_3, where=p_exit_3 > P3_3, color='skyblue', alpha=0.6)
 plt.fill_between(h3 / 1e3, p_exit_3, P3_3, where=p_exit_3 < P3_3, color='salmon', alpha=0.6)
 plt.ylabel('Pressão (Pa)')
@@ -212,4 +187,3 @@ plt.ylabel('Empuxo (MN)')
 plt.grid(True, which='both')
 plt.legend()
 plt.show()
-
